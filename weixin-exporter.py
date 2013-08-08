@@ -4,7 +4,7 @@
 Author:         Xia Kai <xiaket@corp.netease.com/xiaket@gmail.com>
 Filename:       weixin-exporter.py
 Date created:   2013-08-07 19:50
-Last modified:  2013-08-08 13:05
+Last modified:  2013-08-08 20:53
 
 Description:
 
@@ -89,12 +89,17 @@ ID_RE = re.compile(r"[0-9A-Fa-f]{32}")
 
 
 class Message(object):
-    def __init__(self, _tuple):
+    """ 一条微信消息. """
+    def __init__(self, root_dir, session_id, data):
+        self.root_dir = root_dir
+        self.session_id = session_id
         self.pk = _tuple[0]
         self.time = datetime.fromtimestamp(_tuple[1])
         self.content = _tuple[2]
         self.kind = _tuple[4]
         self.sending = (_tuple[5] == 0)
+        self.data = data
+        self.media_path = None
 
     def format_emoticon(self, name):
         """目前返回图片路径."""
@@ -102,22 +107,32 @@ class Message(object):
         emoticon_path = "%s/Expression_%s@2x.png" % (
             WX_APP_DIR, WX_EMOTICON_DICT[name],
         )
-        return "<file://%s>" % emoticon_path
+        self.media_path = "<file://%s>" % emoticon_path
 
     def format_appmsg(self):
-        print "format app msg"
+        # FIXME: 数据在"OpenData"
+        pass
 
     def format_location(self):
-        print "format app msg"
+        # FIXME: 找高德的API. 下载到本地生成图片.
+        pass
 
     def format_voicemsg(self):
-        print "format voice msg"
+        """返回声音文件路径."""
+        voicemsg_path = "%s/Audio/%s/%s.aud" % (
+            self.root_dir, self.session_id, self.pk
+        )
+        self.media_path = "<file://%s>" % voicemsg_path
 
     def format_img(self):
-        print "format img"
+        """返回图片文件路径."""
+        img_path = "%s/Img/%s/%s.pic" % (
+            self.root_dir, self.session_id, self.pk
+        )
+        self.media_path = "<file://%s>" % img_path
 
     def format_emoji(self):
-        print "format emoji"
+        pass
 
     def replace_media(self):
         """替换消息中的表情/图片/声音."""
@@ -179,7 +194,7 @@ def read_sessions(root_dir):
     connection.close()
 
     sessions = {}
-    # 找到sessionid的目的是在MM.sqlite中能够找到这个session的聊天记录.
+    # 找到session_id的目的是在MM.sqlite中能够找到这个session的聊天记录.
     main_db = "%s/DB/MM.sqlite" % root_dir
     connection = sqlite3.connect(main_db)
     cursor = connection.cursor()
@@ -191,7 +206,7 @@ def read_sessions(root_dir):
     session_id = sessions[max(sessions)]
     sql = "SELECT MesLocalID,CreateTime,Message,ImgStatus,Type,Des from Chat_%s;" % session_id
     cursor.execute(sql)
-    return [Message(_tuple) for _tuple in cursor.fetchall()]
+    return [Message(root_dir, session_id, data) for data in cursor.fetchall()]
 
 def main():
     target_dir_path = find_target_dir()
