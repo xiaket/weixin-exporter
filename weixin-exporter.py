@@ -4,7 +4,7 @@
 Author:         Xia Kai <xiaket@corp.netease.com/xiaket@gmail.com>
 Filename:       weixin-exporter.py
 Date created:   2013-08-07 19:50
-Last modified:  2013-08-08 20:53
+Last modified:  2013-08-10 10:13
 
 Description:
 
@@ -93,11 +93,11 @@ class Message(object):
     def __init__(self, root_dir, session_id, data):
         self.root_dir = root_dir
         self.session_id = session_id
-        self.pk = _tuple[0]
-        self.time = datetime.fromtimestamp(_tuple[1])
-        self.content = _tuple[2]
-        self.kind = _tuple[4]
-        self.sending = (_tuple[5] == 0)
+        self.pk = data[0]
+        self.time = datetime.fromtimestamp(data[1])
+        self.content = data[2]
+        self.kind = data[4]
+        self.sending = (data[5] == 0)
         self.data = data
         self.media_path = None
 
@@ -114,7 +114,10 @@ class Message(object):
         pass
 
     def format_location(self):
-        # FIXME: 找高德的API. 下载到本地生成图片.
+        # 高德api key: xxx
+        # 高德app name: weixin-exporter
+        # 高德username: xiaket
+        # URI API太弱, 不支持scale, 需要使用js的API.
         pass
 
     def format_voicemsg(self):
