@@ -4,7 +4,7 @@
 Author:         Xia Kai <xiaket@corp.netease.com/xiaket@gmail.com>
 Filename:       weixin-exporter.py
 Date created:   2013-08-07 19:50
-Last modified:  2015-02-07 21:37
+Last modified:  2015-02-07 21:42
 Modified by:    Xia Kai <xiaket@corp.netease.com/xiaket@gmail.com>
 
 Description:
@@ -12,11 +12,11 @@ Description:
 Changelog:
 清理掉一些东西, 更新到现在的版本, 能把消息打印出来先.
 """
+import commands
 import os
 import re
-import subprocess
-import commands
 import sqlite3
+import sys
 
 from datetime import datetime
 
@@ -81,7 +81,6 @@ class Message(object):
 
     def format_emoji(self):
         self.content = "[Emoji]"
-        pass
 
     def replace_media(self):
         """替换消息中的表情/图片/声音."""
@@ -104,6 +103,8 @@ class Message(object):
         elif self.kind == 42:
             # I don't know what is this.
             pass
+        else:
+            sys.stderr.write(self.content + "\n")
 
     def __repr__(self):
         return "<%s: %s>" % (
