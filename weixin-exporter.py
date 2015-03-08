@@ -4,7 +4,7 @@
 Author:         Xia Kai <xiaket@corp.netease.com/xiaket@gmail.com>
 Filename:       weixin-exporter.py
 Date created:   2013-08-07 19:50
-Last modified:  2015-02-07 21:42
+Last modified:  2015-03-08 19:22
 Modified by:    Xia Kai <xiaket@corp.netease.com/xiaket@gmail.com>
 
 Description:
@@ -18,6 +18,7 @@ import re
 import sqlite3
 import sys
 
+from collections import defaultdict
 from datetime import datetime
 
 
@@ -42,6 +43,7 @@ class Message(object):
         self.sending = (data[5] == 0)
         self.data = data
         self.media_path = None
+        self.received = self.data[5] == 1
 
     def format_appmsg(self):
         self.content = "[AppMsg]"
@@ -103,7 +105,7 @@ class Message(object):
         elif self.kind == 42:
             # I don't know what is this.
             pass
-        else:
+        elif self.kind != 1:
             sys.stderr.write(self.content + "\n")
 
     def __repr__(self):
@@ -145,9 +147,28 @@ def read_sessions(root_dir):
 def main():
     target_dir_path = find_target_dir()
     messages = read_sessions(target_dir_path)
+    dates = defaultdict(list)
     for message in messages:
         message.replace_media()
-        print message.time.strftime("%y-%m-%d %H:%M"), message.content
+        dates[message.time.strftime("%y-%m-%d")].append(message)
+
+    fobj = open("chatlog.txt", 'w')
+    dates_list = dates.keys()
+    dates_list.sort()
+    for date in dates_list:
+        fobj.write("### %s\n" % date)
+        messages = dates[date]
+        messages.sort(cmp=lambda x, y: cmp(x.time, y.time))
+        for message in messages:
+            if not message.content:
+                continue
+            if message.received:
+                fobj.write("[Received]%s: %s\n" % (message.time.strftime("%H:%M"), message.content.encode("UTF-8")))
+            else:
+                fobj.write("[Sending]%s: %s\n" % (message.time.strftime("%H:%M"), message.content.encode("UTF-8")))
+        fobj.write("\n")
+    fobj.close()
+
 
 if __name__ == '__main__':
     main()
