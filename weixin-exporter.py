@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 #coding=utf-8
 """
-Author:         Xia Kai <xiaket@corp.netease.com/xiaket@gmail.com>
+Author:         Kai Xia <xiaket@gmail.com>
 Filename:       weixin-exporter.py
 Date created:   2013-08-07 19:50
 Last modified:  2015-03-08 19:22
-Modified by:    Xia Kai <xiaket@corp.netease.com/xiaket@gmail.com>
+Modified by:    Kai Xia <xiaket@gmail.com>
 
 Description:
 
